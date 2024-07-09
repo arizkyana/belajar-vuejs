@@ -1,9 +1,9 @@
 <script setup>
-import HelloWorld from "./components/HelloWorld.vue";
+import Todo from "./views/Todo.vue";
 </script>
 
 <template>
-  <HelloWorld msg="Vite + Vue" />
+  <Todo />
 </template>
 
 <style scoped></style>
