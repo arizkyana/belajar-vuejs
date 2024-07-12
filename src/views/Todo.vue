@@ -121,7 +121,7 @@ function toggleTheme() {
 </script>
 <template>
   <div class="h-full overflow-y-auto overflow-x-hidden relative">
-    <div class="w-full dark:bg-slate-900 bg-slate-100 min-h-screen pb-16">
+    <div class="w-full dark:bg-slate-900 bg-slate-50 min-h-screen pb-16">
       <div class="max-w-lg mx-auto">
         <section id="header" class="px-6 pb-8 pt-16">
           <div class="flex justify-between items-center py-2">
@@ -151,6 +151,9 @@ function toggleTheme() {
                 class="bg-transparent w-full block outline-none"
                 autofocus
               />
+            </div>
+            <div class="text-xs dark:text-slate-500 text-end py-1">
+              Tekan enter untuk menyimpan aktivitas
             </div>
           </form>
         </section>
