@@ -164,10 +164,12 @@ function toggleTheme() {
             <label
               v-for="(task, index) in filterTasks"
               :key="index"
-              class="px-3 py-5 border-b block cursor-pointer dark:text-slate-200 dark:border-slate-600 border-slate-500"
+              class="px-3 py-5 border-b w-full block cursor-pointer dark:text-slate-200 dark:border-slate-600 border-slate-500"
             >
-              <div class="flex justify-between items-center">
-                <div class="flex justify-start items-center gap-3">
+              <div class="flex justify-between items-center bg-red-100 w-full">
+                <div
+                  class="flex justify-start items-center gap-3 border flex-1"
+                >
                   <div>
                     <input
                       type="checkbox"
@@ -183,19 +185,25 @@ function toggleTheme() {
                   </div>
                   <div
                     :class="{ 'line-through': task.isCompleted }"
-                    class="mb-1"
+                    class="mb-1 border bg-red-50"
                   >
                     {{ task.title }}
                   </div>
                 </div>
 
-                <div>
+                <div class="flex justify-end items-center flex-1">
                   <button
                     type="button"
-                    class="text-red-600 hover:text-red-700"
+                    class="text-red-600 hover:text-red-700 hover:bg-red-50 rounded px-2 py-1 flex justify-center items-center"
                     @click="(event) => handleRemove(index, event)"
                   >
                     <vue-feather type="trash"></vue-feather>
+                  </button>
+                  <button
+                    type="button"
+                    class="text-slate-600 hover:text-slate-700 hover:bg-slate-50 rounded-lg px-2 py-1 flex justify-center items-center"
+                  >
+                    <vue-feather type="more-vertical"></vue-feather>
                   </button>
                 </div>
               </div>
