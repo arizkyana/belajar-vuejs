@@ -123,7 +123,7 @@ function toggleTheme() {
   <div class="h-full overflow-y-auto overflow-x-hidden relative">
     <div class="w-full dark:bg-slate-900 bg-slate-50 min-h-screen pb-16">
       <div class="max-w-lg mx-auto">
-        <section id="header" class="px-6 pb-8 pt-16">
+        <section id="header" class="px-6 pt-16">
           <div class="flex justify-between items-center py-2">
             <h1 class="text-3xl dark:text-white font-semibold">
               Mau ngapain hari ini?
@@ -157,7 +157,7 @@ function toggleTheme() {
             </div>
           </form>
         </section>
-        <section id="content" class="px-6 transform -translate-y-8">
+        <section id="content" class="px-6 pb-8">
           <div
             class="w-full dark:bg-slate-800 bg-slate-200 rounded-lg max-h-max min-h-[4rem]"
           >
