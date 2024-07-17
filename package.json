@@ -11,8 +11,10 @@
   "dependencies": {
     "collect.js": "^4.36.1",
     "feather-icons": "^4.29.2",
+    "uuid": "^10.0.0",
     "vue": "^3.4.29",
-    "vue-feather": "^2.0.0"
+    "vue-feather": "^2.0.0",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.5",

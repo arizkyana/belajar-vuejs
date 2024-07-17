@@ -1,8 +1,8 @@
 <script setup>
 import { ref, computed, toRaw } from "vue";
-import collect from "collect.js";
+import { v1 } from "uuid";
 
-const tasksStorage = localStorage.getItem("tasks")
+const initTasks = localStorage.getItem("tasks")
   ? JSON.parse(localStorage.getItem("tasks"))
   : [];
 
@@ -11,24 +11,21 @@ const themeStorage = localStorage.getItem("theme")
   : "dark";
 
 const theme = ref(themeStorage);
-const tasks = ref(tasksStorage);
+const tasks = ref(initTasks);
 const filter = ref("all");
 const inputNewTask = ref("");
 
 // init set theme to body
 document.documentElement.className = theme.value;
 
-const handleCheck = (idx, e) => {
-  const isCompleted = e.target.checked;
-
-  const newTasks = [...tasks.value].map((item, i) => {
-    if (idx === i) {
+const handleCheck = (element, e) => {
+  const newTasks = [...tasks.value].map((item) => {
+    if (element.id === item.id) {
       return {
-        ...item,
-        isCompleted,
+        ...toRaw(element),
       };
     }
-    return { ...item };
+    return { ...toRaw(item) };
   });
 
   tasks.value = newTasks;
@@ -49,7 +46,27 @@ const handleRemove = (idx, e) => {
 
 const handleFilter = (newFilter, e) => {
   e.preventDefault();
-  filter.value = newFilter;
+
+  const _taskStorage = localStorage.getItem("tasks")
+    ? JSON.parse(localStorage.getItem("tasks"))
+    : [];
+
+  if (_taskStorage.length > 0) {
+    const currentTasks = [..._taskStorage];
+
+    switch (newFilter) {
+      case "active":
+        tasks.value = currentTasks.filter((item) => !item.isCompleted);
+        break;
+      case "completed":
+        tasks.value = currentTasks.filter((item) => item.isCompleted);
+        break;
+      default:
+        tasks.value = currentTasks;
+    }
+
+    filter.value = newFilter;
+  }
 };
 
 const handleSubmit = (e) => {
@@ -60,17 +77,17 @@ const handleSubmit = (e) => {
   }
 
   const currentTasks = [...tasks.value];
+
   currentTasks.push({
+    id: v1(),
     title: inputNewTask.value,
     createdAt: new Date(),
     isCompleted: false,
   });
 
-  const sortByCreatedAt = collect(currentTasks).sortByDesc("createdAt");
+  tasks.value = currentTasks;
 
-  tasks.value = sortByCreatedAt;
-
-  updateTaskStorage(sortByCreatedAt);
+  updateTaskStorage(currentTasks);
 
   inputNewTask.value = "";
 };
@@ -86,21 +103,20 @@ const handleClear = (e) => {
   updateTaskStorage(filtered);
 };
 
+const handleMove = (e) => {
+  // console.log("moving > ", e);
+};
+
+const handleDragChange = (e) => {
+  // console.log("change > ", e);
+  // const { oldIndex, newIndex } = e.moved;
+
+  updateTaskStorage([...tasks.value]);
+};
+
 const filterUncompletedTasks = computed(() => {
   const currentTasks = [...tasks.value];
   return currentTasks.filter((item) => !item.isCompleted);
-});
-
-const filterTasks = computed(() => {
-  const currentTasks = [...tasks.value];
-
-  if (filter.value === "active")
-    return currentTasks.filter((item) => !item.isCompleted);
-  if (filter.value === "completed") {
-    return currentTasks.filter((item) => item.isCompleted);
-  }
-
-  return collect(currentTasks).sortByDesc("createdAt");
 });
 
 function updateTaskStorage(tasks) {
@@ -161,53 +177,64 @@ function toggleTheme() {
           <div
             class="w-full dark:bg-slate-800 bg-slate-200 rounded-lg max-h-max min-h-[4rem]"
           >
-            <label
-              v-for="(task, index) in filterTasks"
-              :key="index"
-              class="px-3 py-5 border-b w-full block cursor-pointer dark:text-slate-200 dark:border-slate-600 border-slate-500"
+            <draggable
+              :list="tasks"
+              item-key="title"
+              class="list-group"
+              ghost-class="ghost"
+              @start="dragging = true"
+              @end="dragging = false"
+              :move="handleMove"
+              @change="handleDragChange"
+              :disabled="filter !== 'all'"
             >
-              <div class="flex justify-between items-center bg-red-100 w-full">
-                <div
-                  class="flex justify-start items-center gap-3 border flex-1"
+              <template #item="{ element, index }">
+                <label
+                  :class="{ 'cursor-default': filter !== 'all' }"
+                  class="px-3 dark:border-t-slate-800 dark:border-l-slate-800 dark:border-r-slate-800 dark:bg-slate-800 bg-slate-200 border-t-slate-200 border-r-slate-200 border-l-slate-200 py-5 border-b flex justify-between overflow-hidden items-center w-full cursor-pointer dark:text-slate-200 dark:border-slate-600 border-slate-500"
                 >
-                  <div>
-                    <input
-                      type="checkbox"
-                      class="hidden"
-                      @change="(event) => handleCheck(index, event)"
-                    />
-                    <vue-feather
-                      v-if="task.isCompleted"
-                      type="check-circle"
-                      class="text-emerald-500"
-                    ></vue-feather>
-                    <vue-feather v-else type="circle"></vue-feather>
-                  </div>
                   <div
-                    :class="{ 'line-through': task.isCompleted }"
-                    class="mb-1 border bg-red-50"
+                    class="flex justify-start items-center flex-1 w-3/4 gap-3"
                   >
-                    {{ task.title }}
+                    <div>
+                      <input
+                        :disabled="filter !== 'all'"
+                        type="checkbox"
+                        class="hidden"
+                        v-model="element.isCompleted"
+                        @change="(event) => handleCheck(element, event)"
+                      />
+                      <!-- @change="(event) => handleCheck(index, event)" -->
+                      <vue-feather
+                        v-if="element.isCompleted"
+                        type="check-circle"
+                        class="text-emerald-500"
+                      ></vue-feather>
+                      <vue-feather v-else type="circle"></vue-feather>
+                    </div>
+                    <div
+                      :class="{ 'line-through': element.isCompleted }"
+                      class="mb-1 overflow-hidden text-wrap whitespace-pre-line break-words w-full"
+                    >
+                      <p>{{ element.title }}</p>
+                    </div>
                   </div>
-                </div>
-
-                <div class="flex justify-end items-center flex-1">
-                  <button
-                    type="button"
-                    class="text-red-600 hover:text-red-700 hover:bg-red-50 rounded px-2 py-1 flex justify-center items-center"
-                    @click="(event) => handleRemove(index, event)"
-                  >
-                    <vue-feather type="trash"></vue-feather>
-                  </button>
-                  <button
-                    type="button"
-                    class="text-slate-600 hover:text-slate-700 hover:bg-slate-50 rounded-lg px-2 py-1 flex justify-center items-center"
-                  >
-                    <vue-feather type="more-vertical"></vue-feather>
-                  </button>
-                </div>
-              </div>
-            </label>
+                  <div class="flex justify-end items-center">
+                    <button
+                      :disabled="filter !== 'all'"
+                      type="button"
+                      :class="{
+                        'text-slate-400 hover:text-slate-500': filter !== 'all',
+                      }"
+                      class="text-red-600 hover:text-red-700 rounded px-2 py-1 flex justify-center items-center"
+                      @click="(event) => handleRemove(index, event)"
+                    >
+                      <vue-feather type="trash"></vue-feather>
+                    </button>
+                  </div>
+                </label>
+              </template>
+            </draggable>
             <div class="px-3 py-5 text-slate-200">
               <div
                 class="flex justify-between items-center text-sm text-slate-500"
